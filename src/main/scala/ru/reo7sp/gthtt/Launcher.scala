@@ -14,17 +14,18 @@ package ru.reo7sp.gthtt
 import java.io.File
 
 object Launcher extends App {
-  if (args.isEmpty) {
-    printHelp()
-    System.exit(1)
-  }
-
-  args(0) match {
-    case "download" =>
-      downloader.downloadSubs(new File(args(1)), args.lift(2).getOrElse("1").toInt, args.lift(3).getOrElse("2000").toInt)
-    case "analyze" =>
-      ???
-    case _ =>
+  try {
+    args(0) match {
+      case "download" =>
+        downloader.downloadSubs(new File(args(1)), args.lift(2).getOrElse("1").toInt, args.lift(3).getOrElse("2000").toInt)
+      case "filter" =>
+        filterer.filterSubs(new File(args(1)).listFiles)
+      case "analyze" =>
+        analyzer.saveReport(analyzer.pickBestThemes(new File(args(1)).listFiles), new File(args(2)))
+    }
+  } catch {
+    case e: ArrayIndexOutOfBoundsException =>
+      System.err.println(e)
       printHelp()
       System.exit(1)
   }
@@ -35,8 +36,9 @@ object Launcher extends App {
         |Usage: gthtt MODE OPTIONS
         |
         |Modes:
-        |  download DESTINATION_SUBS_DIR INDEX_FROM=1 INDEX_TO=2000
-        |  analyze SUBS_DIR DESTINATION_FILE
+        |    download DESTINATION_SUBS_DIR INDEX_FROM=1 INDEX_TO=2000
+        |    filter SUBS_DIR
+        |    analyze SUBS_DIR DESTINATION_FILE
       """.stripMargin)
   }
 }

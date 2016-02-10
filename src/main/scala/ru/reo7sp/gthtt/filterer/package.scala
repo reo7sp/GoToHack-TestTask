@@ -11,30 +11,18 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.{File, PrintWriter}
+import java.io.File
 
-import scala.io.Source
-import scala.util.control.NonFatal
+package object filterer {
+  def filterSubs(files: TraversableOnce[File]): Unit = files.foreach(filterSubs)
 
-package object downloader {
-  def downloadSubs(toDir: File, indexFrom: Int, indexTo: Int): Unit = {
-    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $toDir")
-    (indexFrom to indexTo).par.foreach { i =>
-      try {
-        val lines = Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines.
-          filterNot(s => s.isEmpty || s(0).isDigit)
+  def filterSubs(srcFile: File): Unit = {
+    val id = srcFile.toPath.getFileName.toString.toInt
+    val destFile = new File(srcFile.getParentFile, s"$id.json")
 
-        val writer = new PrintWriter(new File(toDir, s"$i.txt"))
-        try {
-          lines.foreach(writer.println)
-        } catch {
-          case NonFatal(e) => System.err.println(s"Error while saving $i. $e")
-        } finally {
-          writer.close()
-        }
-      } catch {
-        case NonFatal(e) => System.err.println(s"Error while downloading $i. $e")
-      }
-    }
+  }
+
+  def getVideoInfo(id: Int) = {
+
   }
 }

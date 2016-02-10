@@ -9,32 +9,6 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package ru.reo7sp.gthtt
+package ru.reo7sp.gthtt.analyzer
 
-import java.io.{File, PrintWriter}
-
-import scala.io.Source
-import scala.util.control.NonFatal
-
-package object downloader {
-  def downloadSubs(toDir: File, indexFrom: Int, indexTo: Int): Unit = {
-    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $toDir")
-    (indexFrom to indexTo).par.foreach { i =>
-      try {
-        val lines = Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines.
-          filterNot(s => s.isEmpty || s(0).isDigit)
-
-        val writer = new PrintWriter(new File(toDir, s"$i.txt"))
-        try {
-          lines.foreach(writer.println)
-        } catch {
-          case NonFatal(e) => System.err.println(s"Error while saving $i. $e")
-        } finally {
-          writer.close()
-        }
-      } catch {
-        case NonFatal(e) => System.err.println(s"Error while downloading $i. $e")
-      }
-    }
-  }
-}
+case class Report()

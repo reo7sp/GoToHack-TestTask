@@ -11,30 +11,16 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.{File, PrintWriter}
+import java.io.File
 
-import scala.io.Source
-import scala.util.control.NonFatal
+package object analyzer {
+  def pickBestThemes(file: File): Report = {
+    ???
+  }
 
-package object downloader {
-  def downloadSubs(toDir: File, indexFrom: Int, indexTo: Int): Unit = {
-    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $toDir")
-    (indexFrom to indexTo).par.foreach { i =>
-      try {
-        val lines = Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines.
-          filterNot(s => s.isEmpty || s(0).isDigit)
+  def pickBestThemes(files: TraversableOnce[File]): TraversableOnce[Report] = files.map(pickBestThemes)
 
-        val writer = new PrintWriter(new File(toDir, s"$i.txt"))
-        try {
-          lines.foreach(writer.println)
-        } catch {
-          case NonFatal(e) => System.err.println(s"Error while saving $i. $e")
-        } finally {
-          writer.close()
-        }
-      } catch {
-        case NonFatal(e) => System.err.println(s"Error while downloading $i. $e")
-      }
-    }
+  def saveReport(result: TraversableOnce[Report], toFile: File): Unit = {
+    ???
   }
 }
