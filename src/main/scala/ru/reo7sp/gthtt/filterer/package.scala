@@ -11,18 +11,67 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.File
+import java.io.{File, PrintWriter}
+
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.native.JsonMethods
+import ru.reo7sp.gthtt.tedvideo.TedVideoInfo
+
+import scala.io.Source
+import scala.util.control.NonFatal
 
 package object filterer {
-  def filterSubs(files: TraversableOnce[File]): Unit = files.foreach(filterSubs)
-
-  def filterSubs(srcFile: File): Unit = {
-    val id = srcFile.toPath.getFileName.toString.toInt
-    val destFile = new File(srcFile.getParentFile, s"$id.json")
-
+  def filterSubs(files: TraversableOnce[File]): Unit = files.foreach {
+    f =>
+      try {
+        filterSubs(f)
+      } catch {
+        case NonFatal(e) => System.err.println(s"Error while filtering $f. $e")
+      }
   }
 
-  def getVideoInfo(id: Int) = {
+  def filterSubs(srcFile: File): Unit = {
+    def removeSymbols(text: String) = text.
+      replaceAll("""\(.+?\)""", "").
+      replaceAll("""[\x21-\x40\x5b-\x60\x7b-\x7e]""", "")
 
+    def removeNonNouns(text: String) = text.
+      replaceAll(???, "")
+
+    def removeRedundantWhitespace(text: String) = text.
+      replace('\n', ' ').
+      replaceAll(" {2,}", " ").
+      trim
+
+    val filterText = removeSymbols _ andThen removeNonNouns andThen removeRedundantWhitespace
+
+    def load(file: File) = Source.fromFile(file).mkString
+
+    def save(json: JValue, file: File): Unit = {
+      val writer = new PrintWriter(file)
+      try {
+        writer.write(JsonMethods.pretty(JsonMethods.render(json)))
+      } finally {
+        writer.close()
+      }
+    }
+
+    val id = srcFile.toPath.getFileName.toString.toInt
+    val video = TedVideoInfo(id)
+
+    val json =
+      ("id" -> id) ~
+        ("name" -> video.name) ~
+        ("text" -> filterText(load(srcFile))) ~
+        ("ratings" -> video.ratings.map { rating =>
+          ("name" -> rating.name) ~
+            ("value" -> rating.value)
+        }) ~
+        ("tags" -> video.tags.map { tag =>
+          "name" -> tag.name
+        })
+
+    save(json, new File(srcFile.getParentFile, s"$id.json"))
   }
 }

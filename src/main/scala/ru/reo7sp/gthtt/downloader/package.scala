@@ -17,21 +17,25 @@ import scala.io.Source
 import scala.util.control.NonFatal
 
 package object downloader {
-  def downloadSubs(toDir: File, indexFrom: Int, indexTo: Int): Unit = {
-    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $toDir")
+  def downloadSubs(destDir: File, indexFrom: Int, indexTo: Int): Unit = {
+    def download(i: Int) = {
+      Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines.
+        filterNot(s => s.isEmpty || s(0).isDigit)
+    }
+
+    def save(lines: TraversableOnce[String], file: File): Unit = {
+      val writer = new PrintWriter(file)
+      try {
+        lines.foreach(writer.println)
+      } finally {
+        writer.close()
+      }
+    }
+
+    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $destDir")
     (indexFrom to indexTo).par.foreach { i =>
       try {
-        val lines = Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines.
-          filterNot(s => s.isEmpty || s(0).isDigit)
-
-        val writer = new PrintWriter(new File(toDir, s"$i.txt"))
-        try {
-          lines.foreach(writer.println)
-        } catch {
-          case NonFatal(e) => System.err.println(s"Error while saving $i. $e")
-        } finally {
-          writer.close()
-        }
+        save(download(i), new File(destDir, s"$i.txt"))
       } catch {
         case NonFatal(e) => System.err.println(s"Error while downloading $i. $e")
       }

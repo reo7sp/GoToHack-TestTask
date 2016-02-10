@@ -15,10 +15,10 @@ import org.json4s.native.JsonMethods
 
 import scala.io.Source
 
-package object tedcomparser {
+package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
 
-  def pullJsonString(id: Int) = jsonInTedComHtmlPattern.findFirstIn(Source.fromURL(s"http://ted.com/talks/$id").mkString).get
+  def fetchJsonString(id: Int) = jsonInTedComHtmlPattern.findFirstIn(Source.fromURL(s"http://ted.com/talks/$id").mkString).get
 
-  def pullJson(id: Int) = JsonMethods.parse(pullJsonString(id))
+  def fetchJson(id: Int) = JsonMethods.parse(fetchJsonString(id))
 }
