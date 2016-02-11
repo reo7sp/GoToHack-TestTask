@@ -11,23 +11,10 @@
 
 package ru.reo7sp.gthtt.tedvideo
 
-import org.json4s._
 import ru.reo7sp.gthtt.tedcomParser
 
 case class TedVideoInfo(id: Int, name: String, ratings: Iterable[Rating], tags: Iterable[Tag])
 
 object TedVideoInfo {
-  def apply(id: Int) = {
-    val json = tedcomParser.fetchJson(id)
-    val talkJson = (tedcomParser.fetchJson(id) \ "talks") (0)
-    val ratingsJson = tedcomParser.fetchJson(id) \ "ratings"
-
-    val JString(name) = talkJson \ "title"
-    val ratings = ratingsJson.children.map {
-      case JObject(List(JField("name", JString(ratingName)), JField("count", JInt(ratingValue)))) => Rating(ratingName, ratingValue.toInt)
-    }
-    val tags = (talkJson \ "targeting" \ "tag").extract[String].split(',').map(Tag)
-
-    TedVideoInfo(id, name, ratings, tags)
-  }
+  def apply(id: Int): TedVideoInfo = tedcomParser.parseWebpage(id)
 }

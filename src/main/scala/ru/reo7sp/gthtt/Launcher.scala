@@ -17,11 +17,44 @@ object Launcher extends App {
   try {
     args(0) match {
       case "download" =>
-        downloader.downloadSubs(new File(args(1)), args.lift(2).getOrElse("1").toInt, args.lift(3).getOrElse("2000").toInt)
+        val destDir = new File(args(1))
+        val indexFrom = args.lift(2).getOrElse("1").toInt
+        val indexTo = args.lift(3).getOrElse("2000").toInt
+
+        println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $destDir")
+
+        downloader.downloadSubs(destDir, indexFrom, indexTo)
       case "filter" =>
-        filterer.filterSubs(new File(args(1)).listFiles)
+        val availableFiles = new File(args(1)).listFiles.toSet.par
+        val isRewrite = args.lift(2).contains("-r")
+        val files = availableFiles.filter { f =>
+          val fName = f.getName
+          fName.endsWith(".txt") && (isRewrite || !availableFiles.exists { g =>
+            val gName = g.getName
+            gName.endsWith(".json") && gName.replace(".json", ".txt") == fName
+          })
+        }
+
+        println(s"All subtitles: ${availableFiles.size}")
+        println(s"To process: ${files.size}")
+
+        filterer.filterSubs(files)
       case "analyze" =>
-        analyzer.saveReport(analyzer.pickBestThemes(new File(args(1)).listFiles), new File(args(2)))
+        val destFile = new File(args(2))
+        val availableFiles = new File(args(1)).listFiles.toSet.par
+        val isRewrite = args.lift(3).contains("-r")
+        val files = availableFiles.filter { f =>
+          val fName = f.getName
+          fName.endsWith(".txt") && (isRewrite || !availableFiles.exists { g =>
+            val gName = g.getName
+            gName.endsWith(".json") && gName.replace(".json", ".txt") == fName
+          })
+        }
+
+        println(s"All videos: ${availableFiles.size}")
+        println(s"To process: ${files.size}")
+
+        analyzer.saveReport(analyzer.pickBestThemes(files), destFile)
     }
   } catch {
     case e: ArrayIndexOutOfBoundsException =>
@@ -37,8 +70,12 @@ object Launcher extends App {
         |
         |Modes:
         |    download DESTINATION_SUBS_DIR INDEX_FROM=1 INDEX_TO=2000
-        |    filter SUBS_DIR
-        |    analyze SUBS_DIR DESTINATION_FILE
+        |    filter SUBS_DIR OPTIONS
+        |        Options:
+        |            -r rewrite existing files
+        |    analyze SUBS_DIR DESTINATION_FILE OPTIONS
+        |        Options:
+        |            -r rewrite existing files
       """.stripMargin)
   }
 }

@@ -13,14 +13,16 @@ package ru.reo7sp.gthtt
 
 import java.io.File
 
+import scala.collection.parallel.ParIterable
+
 package object analyzer {
   def pickBestThemes(file: File): Report = {
     ???
   }
 
-  def pickBestThemes(files: TraversableOnce[File]): TraversableOnce[Report] = files.map(pickBestThemes)
+  def pickBestThemes(files: ParIterable[File]): ParIterable[Report] = files.map(pickBestThemes)
 
-  def saveReport(result: TraversableOnce[Report], toFile: File): Unit = {
+  def saveReport(result: ParIterable[Report], toFile: File): Unit = {
     ???
   }
 }

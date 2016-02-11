@@ -19,8 +19,9 @@ package object english {
   val adverbSuffixes = Set("ly", "wards", "wise")
   val verbSuffixes = Set("ing", "ed", "en", "ate", "fy", "ize", "ise")
   val adjectiveSuffixes = Set("able", "ible", "al", "ant", "ary", "ent", "esque", "est", "ful", "ic", "ish", "ive", "less", "ous", "y", "er", "est")
-  val nounSuffixes = Set("s", "ance", "ancy", "acy", "ence", "ency", "ion", "sion", "tion", "ate", "fy", "ism", "ity", "logy", "ment", "ness", "ship", "dom", "er", "or", "ty")
+  val nounSuffixes = Set("ance", "ancy", "acy", "ence", "ency", "ion", "sion", "tion", "ate", "fy", "ism", "ity", "logy", "ment", "ness", "ship", "dom", "er", "or", "ty")
 
+  lazy val specials = Source.fromURL(getClass.getResource("/special.txt")).getLines.toSet
   lazy val adverbs = Source.fromURL(getClass.getResource("/adverbs.txt")).getLines.toSet
   lazy val verbs = Source.fromURL(getClass.getResource("/verbs.txt")).getLines.toSet
   lazy val adjectives = Source.fromURL(getClass.getResource("/adjectives.txt")).getLines.toSet
@@ -36,7 +37,9 @@ package object english {
           exists(set.contains)
       }
 
-      if (checkIfSuffixesAreInSet(word, verbSuffixes)) {
+      if (word.length < 4) {
+        None
+      } else if (checkIfSuffixesAreInSet(word, verbSuffixes)) {
         Some(WordType.Verb)
       } else if (checkIfSuffixesAreInSet(word, adverbSuffixes)) {
         Some(WordType.Adverb)
@@ -50,9 +53,13 @@ package object english {
     }
 
     def guessByName(word: String) = {
-      if (adverbs contains word) {
+      if (specials contains word) {
+        WordType.Special
+      } else if (adverbs contains word) {
         WordType.Adverb
       } else if (verbs contains word) {
+        WordType.Verb
+      } else if (verbs contains word + "s") {
         WordType.Verb
       } else if (adjectives contains word) {
         WordType.Adjective
@@ -63,8 +70,13 @@ package object english {
 
     def removeSymbols(word: String) = word.replaceAll("""[\x21-\x40\x5b-\x60\x7b-\x7e]""", "")
 
-    val guessByFilteredName = removeSymbols _ andThen removePrefix andThen guessByName
-
+    def guessByFilteredName(word: String) = {
+      val wordWithoutSymbols = removeSymbols(word)
+      guessByName(removePrefix(wordWithoutSymbols)) match {
+        case r if r == WordType.Noun => guessByName(wordWithoutSymbols)
+        case r => r
+      }
+    }
 
     guessBySuffix(word) getOrElse guessByFilteredName(word)
   }

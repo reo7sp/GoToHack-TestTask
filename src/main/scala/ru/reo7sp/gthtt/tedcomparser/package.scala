@@ -11,14 +11,39 @@
 
 package ru.reo7sp.gthtt
 
+import org.json4s._
 import org.json4s.native.JsonMethods
+import ru.reo7sp.gthtt.tedvideo.{Rating, Tag, TedVideoInfo}
 
 import scala.io.Source
 
 package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
 
-  def fetchJsonString(id: Int) = jsonInTedComHtmlPattern.findFirstIn(Source.fromURL(s"http://ted.com/talks/$id").mkString).get
+  def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines.mkString
+
+  def fetchJsonString(id: Int) = jsonInTedComHtmlPattern.findFirstMatchIn(fetchHtml(id)).get.group(1)
 
   def fetchJson(id: Int) = JsonMethods.parse(fetchJsonString(id))
+
+  def parseJson(json: JValue) = {
+    implicit val formats = DefaultFormats
+
+    val talkJson = (json \ "talks")(0)
+    val ratingsJson = json \ "ratings"
+
+    val JInt(bigId) = talkJson \ "id"
+    val id = bigId.toInt
+    val JString(name) = talkJson \ "title"
+    val ratings = ratingsJson.children.map { obj =>
+      val JString(ratingName) = obj \ "name"
+      val JInt(ratingValue) = obj \ "count"
+      Rating(ratingName, ratingValue.toInt)
+    }
+    val tags = (talkJson \ "targeting" \ "tag").extract[String].split(',').map(Tag)
+
+    TedVideoInfo(id, name, ratings, tags)
+  }
+
+  val parseWebpage = fetchJson _ andThen parseJson
 }

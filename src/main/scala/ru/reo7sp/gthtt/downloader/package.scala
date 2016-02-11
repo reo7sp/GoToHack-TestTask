@@ -32,7 +32,6 @@ package object downloader {
       }
     }
 
-    println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $destDir")
     (indexFrom to indexTo).par.foreach { i =>
       try {
         save(download(i), new File(destDir, s"$i.txt"))

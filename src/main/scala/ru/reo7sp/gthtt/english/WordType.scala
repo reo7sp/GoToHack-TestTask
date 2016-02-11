@@ -13,5 +13,5 @@ package ru.reo7sp.gthtt.english
 
 object WordType extends Enumeration {
   type WordType = Value
-  val Adverb, Adjective, Verb, Noun = Value
+  val Adverb, Adjective, Verb, Noun, Special = Value
 }

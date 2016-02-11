@@ -19,23 +19,17 @@ import org.json4s.native.JsonMethods
 import ru.reo7sp.gthtt.english.WordType
 import ru.reo7sp.gthtt.tedvideo.TedVideoInfo
 
+import scala.collection.parallel.ParIterable
 import scala.io.Source
-import scala.util.control.NonFatal
 
 package object filterer {
-  def filterSubs(files: TraversableOnce[File]): Unit = files.foreach {
-    f =>
-      try {
-        filterSubs(f)
-      } catch {
-        case NonFatal(e) => System.err.println(s"Error while filtering $f. $e")
-      }
-  }
+  def filterSubs(files: ParIterable[File]): Unit = files.foreach(filterSubs)
 
   def filterSubs(srcFile: File): Unit = {
     def normalizeText(text: String) = text.
       replace('\n', ' ').
-      replaceAll(" {2,}", " ").
+      replace('\r', ' ').
+      replaceAll("""\s{2,}""", " ").
       trim.
       toLowerCase
 
@@ -59,7 +53,7 @@ package object filterer {
       }
     }
 
-    val id = srcFile.toPath.getFileName.toString.toInt
+    val id = srcFile.getName.replace(".txt", "").toInt
     val video = TedVideoInfo(id)
 
     val json =
