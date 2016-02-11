@@ -16,6 +16,7 @@ import java.io.{File, PrintWriter}
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.native.JsonMethods
+import ru.reo7sp.gthtt.english.WordType
 import ru.reo7sp.gthtt.tedvideo.TedVideoInfo
 
 import scala.io.Source
@@ -34,20 +35,18 @@ package object filterer {
   def filterSubs(srcFile: File): Unit = {
     def normalizeText(text: String) = text.
       replace('\n', ' ').
+      replaceAll(" {2,}", " ").
+      trim.
       toLowerCase
 
     def removeSymbols(text: String) = text.
       replaceAll("""\(.+?\)""", "").
       replaceAll("""[\x21-\x40\x5b-\x60\x7b-\x7e]""", "")
 
-    def removeNonNouns(text: String) = text.
-      replaceAll(???, "")
-
-    def removeRedundantWhitespace(text: String) = text.
-      replaceAll(" {2,}", " ").
-      trim
-
-    val filterText = normalizeText _ andThen removeSymbols andThen removeNonNouns andThen removeRedundantWhitespace
+    def filterText(text: String) = {
+      val filteredText = removeSymbols(normalizeText(text))
+      filteredText.split(' ').filter(english.guessWordType(_) == WordType.Noun).mkString(" ")
+    }
 
     def load(file: File) = Source.fromFile(file).mkString
 
