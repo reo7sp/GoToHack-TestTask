@@ -41,9 +41,7 @@ package object analyzer {
     val tagStats = tags.groupBy(identity).mapValues(_.size)
     val tagRatings = tagStats.mapValues(count => ratings.map(r => r.copy(value = r.value * count)))
 
-    val stats =
-      wordRatings.map { case (name, ratings) => Theme(name, ratings) } ++
-        tagRatings.map { case (name, ratings) => Theme(name, ratings) }
+    val stats = wordRatings.map { case (name, ratings) => Theme(name, ratings) } ++ tagRatings.map { case (name, ratings) => Theme(name, ratings) }
 
     Report(stats.seq)
   }

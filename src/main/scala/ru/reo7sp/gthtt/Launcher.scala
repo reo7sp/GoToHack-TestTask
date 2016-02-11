@@ -40,7 +40,7 @@ object Launcher extends App {
         filterer.filterSubs(files)
       case "analyze" =>
         val destFile = new File(args(2))
-        val files = new File(args(1)).listFiles.par
+        val files = new File(args(1)).listFiles.par.filter(_.getName.endsWith(".json"))
 
         println(s"Analyzing ${files.size} videos and saving to $destFile")
 
