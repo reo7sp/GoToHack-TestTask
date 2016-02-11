@@ -40,15 +40,7 @@ object Launcher extends App {
         filterer.filterSubs(files)
       case "analyze" =>
         val destFile = new File(args(2))
-        val availableFiles = new File(args(1)).listFiles.toSet.par
-        val isRewrite = args.lift(3).contains("-r")
-        val files = availableFiles.filter { f =>
-          val fName = f.getName
-          fName.endsWith(".txt") && (isRewrite || !availableFiles.exists { g =>
-            val gName = g.getName
-            gName.endsWith(".json") && gName.replace(".json", ".txt") == fName
-          })
-        }
+        val files = new File(args(1)).listFiles.par
 
         println(s"Analyzing ${files.size} videos and saving to $destFile")
 
@@ -67,13 +59,11 @@ object Launcher extends App {
         |Usage: gthtt MODE OPTIONS
         |
         |Modes:
-        |    download DESTINATION_SUBS_DIR INDEX_FROM=1 INDEX_TO=2000
-        |    filter SUBS_DIR OPTIONS
-        |        Options:
-        |            -r rewrite existing files
-        |    analyze SUBS_DIR DESTINATION_FILE OPTIONS
-        |        Options:
-        |            -r rewrite existing files
+        |  download DESTINATION_SUBS_DIR INDEX_FROM=1 INDEX_TO=2000
+        |  filter SUBS_DIR OPTIONS
+        |    Options:
+        |      -r rewrite existing files
+        |  analyze SUBS_DIR DESTINATION_FILE
       """.stripMargin)
   }
 }

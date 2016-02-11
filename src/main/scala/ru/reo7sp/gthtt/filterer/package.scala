@@ -11,7 +11,7 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.{File, PrintWriter}
+import java.io.{File, FileNotFoundException, PrintWriter}
 
 import org.json4s.JsonDSL._
 import org.json4s._
@@ -23,22 +23,28 @@ import scala.collection.parallel.ParIterable
 import scala.io.Source
 
 package object filterer {
-  def filterSubs(files: ParIterable[File]): Unit = files.foreach(filterSubs)
+  def filterSubs(files: ParIterable[File]): Unit = files.foreach { f =>
+    try {
+      filterSubs(f)
+    } catch {
+      case _: FileNotFoundException => f.delete()
+    }
+  }
 
   def filterSubs(srcFile: File): Unit = {
     def normalizeText(text: String) = text.
       replace('\n', ' ').
       replace('\r', ' ').
       replaceAll("""\s{2,}""", " ").
-      trim.
-      toLowerCase
+      toLowerCase.
+      trim
 
     def removeSymbols(text: String) = text.
       replaceAll("""\(.+?\)""", "").
       replaceAll("""[\x21-\x40\x5b-\x60\x7b-\x7e]""", "")
 
     def filterText(text: String) = {
-      val filteredText = removeSymbols(normalizeText(text))
+      val filteredText = normalizeText(removeSymbols(text))
       filteredText.split(' ').filter(english.guessWordType(_) == WordType.Noun).mkString(" ")
     }
 
@@ -56,17 +62,19 @@ package object filterer {
     val id = srcFile.getName.replace(".txt", "").toInt
     val video = TedVideoInfo(id)
 
+    // @formatter:off
     val json =
       ("id" -> id) ~
-        ("name" -> video.name) ~
-        ("text" -> filterText(load(srcFile))) ~
-        ("ratings" -> video.ratings.map { rating =>
-          ("name" -> rating.name) ~
-            ("value" -> rating.value)
-        }) ~
-        ("tags" -> video.tags.map { tag =>
-          "name" -> tag.name
-        })
+      ("name" -> video.name) ~
+      ("text" -> filterText(load(srcFile))) ~
+      ("tags" -> video.tags.map { tag =>
+        "name" -> tag.name
+      }) ~
+      ("ratings" -> video.ratings.map { rating =>
+        ("name" -> rating.name) ~
+        ("value" -> rating.value)
+      })
+    // @formatter:on
 
     save(json, new File(srcFile.getParentFile, s"$id.json"))
   }

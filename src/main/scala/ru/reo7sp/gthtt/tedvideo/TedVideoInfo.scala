@@ -13,7 +13,7 @@ package ru.reo7sp.gthtt.tedvideo
 
 import ru.reo7sp.gthtt.tedcomParser
 
-case class TedVideoInfo(id: Int, name: String, ratings: Iterable[Rating], tags: Iterable[Tag])
+case class TedVideoInfo(id: Int, name: String, ratings: Seq[Rating], tags: Iterable[Tag])
 
 object TedVideoInfo {
   def apply(id: Int): TedVideoInfo = tedcomParser.parseWebpage(id)

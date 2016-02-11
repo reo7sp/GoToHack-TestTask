@@ -21,10 +21,10 @@ package object english {
   val adjectiveSuffixes = Set("able", "ible", "al", "ant", "ary", "ent", "esque", "est", "ful", "ic", "ish", "ive", "less", "ous", "y", "er", "est")
   val nounSuffixes = Set("ance", "ancy", "acy", "ence", "ency", "ion", "sion", "tion", "ate", "fy", "ism", "ity", "logy", "ment", "ness", "ship", "dom", "er", "or", "ty")
 
-  lazy val specials = Source.fromURL(getClass.getResource("/special.txt")).getLines.toSet
-  lazy val adverbs = Source.fromURL(getClass.getResource("/adverbs.txt")).getLines.toSet
-  lazy val verbs = Source.fromURL(getClass.getResource("/verbs.txt")).getLines.toSet
-  lazy val adjectives = Source.fromURL(getClass.getResource("/adjectives.txt")).getLines.toSet
+  lazy val specials = Source.fromURL(getClass.getResource("/special.txt")).getLines().toSet
+  lazy val adverbs = Source.fromURL(getClass.getResource("/adverbs.txt")).getLines().toSet
+  lazy val verbs = Source.fromURL(getClass.getResource("/verbs.txt")).getLines().toSet
+  lazy val adjectives = Source.fromURL(getClass.getResource("/adjectives.txt")).getLines().toSet
 
   def removePrefix(word: String) = word.replaceFirst(prefixes.find(word.startsWith) getOrElse "", "")
 

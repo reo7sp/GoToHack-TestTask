@@ -21,7 +21,7 @@ package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
   val tedcomDownloadMutex = new Object
 
-  def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines.mkString
+  def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines().mkString
 
   def pickJsonString(html: String) = jsonInTedComHtmlPattern.findFirstMatchIn(html).get.group(1)
 

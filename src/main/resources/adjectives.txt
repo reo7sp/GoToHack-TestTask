@@ -387,3 +387,5 @@ wrong
 yellow
 young
 zigzag
+middle
+hard

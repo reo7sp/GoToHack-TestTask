@@ -11,18 +11,62 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.File
+import java.io.{File, PrintWriter}
+
+import org.json4s.JsonDSL._
+import org.json4s._
+import org.json4s.native.JsonMethods
+import ru.reo7sp.gthtt.tedvideo.{Rating, Tag}
 
 import scala.collection.parallel.ParIterable
+import scala.io.Source
 
 package object analyzer {
+  val tagImportance = 8
+
   def pickBestThemes(file: File): Report = {
-    ???
+    def load(file: File) = JsonMethods.parse(Source.fromFile(file).mkString)
+
+    implicit val formats = DefaultFormats
+
+    val json = load(file)
+
+    val ratings = (json \ "ratings").children.map(_.extract[Rating]).sortBy(_.name)
+
+    val words = (json \ "text").extract[String].split(' ').par
+    val wordStats = words.groupBy(identity).mapValues(_.size)
+    val wordRatings = wordStats.mapValues(count => ratings.map(r => r.copy(value = r.value / tagImportance * count)))
+
+    val tags = (json \ "tags").children.par.map(_.extract[Tag]).map(_.name)
+    val tagStats = tags.groupBy(identity).mapValues(_.size)
+    val tagRatings = tagStats.mapValues(count => ratings.map(r => r.copy(value = r.value * count)))
+
+    val stats =
+      wordRatings.map { case (name, ratings) => Theme(name, ratings) } ++
+        tagRatings.map { case (name, ratings) => Theme(name, ratings) }
+
+    Report(stats.seq)
   }
 
-  def pickBestThemes(files: ParIterable[File]): ParIterable[Report] = files.map(pickBestThemes)
+  def pickBestThemes(files: ParIterable[File]): Report = files.map(pickBestThemes).reduce(_ merge _)
 
-  def saveReport(result: ParIterable[Report], toFile: File): Unit = {
-    ???
+  def saveReport(report: Report, destFile: File): Unit = {
+    def save(json: JValue, file: File) = {
+      val writer = new PrintWriter(destFile)
+      try {
+        writer.write(JsonMethods.pretty(JsonMethods.render(json)))
+      } finally {
+        writer.close()
+      }
+    }
+
+    // @formatter:off
+    val json = report.themes.map { theme =>
+      ("name" -> theme.name) ~
+      ("ratings" -> theme.ratings.map(rating => rating.name -> rating.value))
+    }
+    // @formatter:on
+
+    save(json, destFile)
   }
 }
