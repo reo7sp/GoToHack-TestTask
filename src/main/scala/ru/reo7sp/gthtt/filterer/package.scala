@@ -32,6 +32,10 @@ package object filterer {
   }
 
   def filterSubs(srcFile: File): Unit = {
+    def normalizeText(text: String) = text.
+      replace('\n', ' ').
+      toLowerCase
+
     def removeSymbols(text: String) = text.
       replaceAll("""\(.+?\)""", "").
       replaceAll("""[\x21-\x40\x5b-\x60\x7b-\x7e]""", "")
@@ -40,11 +44,10 @@ package object filterer {
       replaceAll(???, "")
 
     def removeRedundantWhitespace(text: String) = text.
-      replace('\n', ' ').
       replaceAll(" {2,}", " ").
       trim
 
-    val filterText = removeSymbols _ andThen removeNonNouns andThen removeRedundantWhitespace
+    val filterText = normalizeText _ andThen removeSymbols andThen removeNonNouns andThen removeRedundantWhitespace
 
     def load(file: File) = Source.fromFile(file).mkString
 
