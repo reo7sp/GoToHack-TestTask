@@ -19,12 +19,15 @@ import scala.io.Source
 
 package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
+  val tedcomDownloadMutex = new Object
 
   def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines.mkString
 
-  def fetchJsonString(id: Int) = jsonInTedComHtmlPattern.findFirstMatchIn(fetchHtml(id)).get.group(1)
+  def pickJsonString(html: String) = jsonInTedComHtmlPattern.findFirstMatchIn(html).get.group(1)
 
-  def fetchJson(id: Int) = JsonMethods.parse(fetchJsonString(id))
+  def pickJson(jsonString: String) = JsonMethods.parse(jsonString)
+
+  def fetchJson(id: Int) = pickJson(pickJsonString(fetchHtml(id)))
 
   def parseJson(json: JValue) = {
     implicit val formats = DefaultFormats
@@ -45,5 +48,8 @@ package object tedcomParser {
     TedVideoInfo(id, name, ratings, tags)
   }
 
-  val parseWebpage = fetchJson _ andThen parseJson
+  def parseWebpage(id: Int) = {
+    val html = tedcomDownloadMutex.synchronized(fetchHtml(id))
+    parseJson(pickJson(pickJsonString(html)))
+  }
 }

@@ -35,8 +35,7 @@ object Launcher extends App {
           })
         }
 
-        println(s"All subtitles: ${availableFiles.size}")
-        println(s"To process: ${files.size}")
+        println(s"Filtering ${files.size} subtitles")
 
         filterer.filterSubs(files)
       case "analyze" =>
@@ -51,8 +50,7 @@ object Launcher extends App {
           })
         }
 
-        println(s"All videos: ${availableFiles.size}")
-        println(s"To process: ${files.size}")
+        println(s"Analyzing ${files.size} videos and saving to $destFile")
 
         analyzer.saveReport(analyzer.pickBestThemes(files), destFile)
     }
