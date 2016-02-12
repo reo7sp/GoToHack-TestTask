@@ -37,9 +37,8 @@ package object tedcomParser {
     val talkJson = (json \ "talks")(0)
     val ratingsJson = json \ "ratings"
 
-    val JInt(bigId) = talkJson \ "id"
-    val id = bigId.toInt
-    val JString(name) = talkJson \ "title"
+    val id = (talkJson \ "id").extract[Int]
+    val name = (talkJson \ "title").extract[String]
     val ratings = ratingsJson.children.map { obj =>
       Rating((obj \ "name").extract[String], (obj \ "count").extract[Int])
     }.sortBy(_.id)
