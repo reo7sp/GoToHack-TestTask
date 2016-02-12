@@ -192,8 +192,6 @@ thousand
 million
 because
 out
-dont
-doesnt
 me
 or
 and
@@ -209,3 +207,15 @@ en
 instead
 not
 yeah
+ive
+whats
+heres
+youve
+else
+id
+oh
+such
+self
+ones
+ca
+th
