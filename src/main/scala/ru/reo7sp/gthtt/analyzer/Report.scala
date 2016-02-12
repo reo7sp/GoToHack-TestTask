@@ -13,7 +13,7 @@ package ru.reo7sp.gthtt.analyzer
 
 case class Report(themes: Iterable[Theme]) {
   def merge(other: Report) = {
-    val newThemes = themes.par.groupBy(_.name).map {
+    val newThemes = (themes ++ other.themes).par.groupBy(_.name).map {
       case (name, similarThemes) =>
         val ratings = similarThemes.map(_.ratings).reduce { (ratings1, ratings2) =>
           (ratings1 zip ratings2).map { case (r1, r2) =>
