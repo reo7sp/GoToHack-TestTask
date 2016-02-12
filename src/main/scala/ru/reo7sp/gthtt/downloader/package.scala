@@ -19,7 +19,7 @@ import scala.util.control.NonFatal
 package object downloader {
   def downloadSubs(destDir: File, indexFrom: Int, indexTo: Int): Unit = {
     def download(i: Int) = {
-      Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt").getLines().
+      Source.fromURL(s"http://www.ted.com/talks/subtitles/id/$i/lang/en/format/srt", "UTF-8").getLines().
         filterNot(s => s.isEmpty || s(0).isDigit)
     }
 

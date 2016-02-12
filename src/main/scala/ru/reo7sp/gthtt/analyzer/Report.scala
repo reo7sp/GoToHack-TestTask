@@ -22,6 +22,6 @@ case class Report(themes: Iterable[Theme]) {
         }
         Theme(name, ratings)
     }
-    Report(newThemes.seq)
+    Report(newThemes)
   }
 }

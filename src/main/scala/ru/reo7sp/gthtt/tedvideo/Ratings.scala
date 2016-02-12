@@ -11,4 +11,25 @@
 
 package ru.reo7sp.gthtt.tedvideo
 
-case class Tag(name: String)
+import scala.collection.generic.GenericTraversableTemplate
+import scala.collection.{IndexedSeqLike, IndexedSeqOptimized, SortedSet}
+
+case class Ratings(private val values: Seq[Int]) extends IndexedSeq[Int] with GenericTraversableTemplate[Int, Ratings] with IndexedSeqLike[Int, Ratings] with IndexedSeqOptimized[Int, Ratings] {
+  require(values.size == 14)
+
+  def apply(id: Int) = values(id)
+
+  def apply(name: String) = apply(Ratings.names(name))
+
+  override def iterator = values.iterator
+
+  override def length = values.length
+}
+
+object Ratings extends IndexedSeqFactory[IndexedSeq] {
+  val names = SortedSet("Funny", "Courageous", "Confusing", "Beautiful", "Unconvincing", "Longwinded", "Informative", "Inspiring", "Fascinating", "Ingenious", "Persuasive", "Jaw-dropping", "Obnoxious", "OK").zipWithIndex.toMap
+
+  def apply(values: Seq[(String, Int)]) = Ratings(values.sortBy(_._1).map(_._2))
+
+  def apply(values: Map[String, Int]) = apply(values.toSeq)
+}
