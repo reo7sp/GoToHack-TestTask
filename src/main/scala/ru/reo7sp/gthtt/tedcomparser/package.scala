@@ -11,15 +11,17 @@
 
 package ru.reo7sp.gthtt
 
+import java.util.concurrent.Semaphore
+
 import org.json4s._
 import org.json4s.native.JsonMethods
-import ru.reo7sp.gthtt.tedvideo.{Rating, Tag, TedVideoInfo}
+import ru.reo7sp.gthtt.tedvideo.{Rating, TedVideoInfo}
 
 import scala.io.Source
 
 package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
-  val tedcomDownloadMutex = new Object
+  val tedcomDownloadSemaphore = new Semaphore(3)
 
   def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines().mkString
 
@@ -39,17 +41,20 @@ package object tedcomParser {
     val id = bigId.toInt
     val JString(name) = talkJson \ "title"
     val ratings = ratingsJson.children.map { obj =>
-      val JString(ratingName) = obj \ "name"
-      val JInt(ratingValue) = obj \ "count"
-      Rating(ratingName, ratingValue.toInt)
-    }
-    val tags = (talkJson \ "targeting" \ "tag").extract[String].split(',').map(Tag)
+      Rating((obj \ "name").extract[String], (obj \ "count").extract[Int])
+    }.sortBy(_.id)
+    val tags = (talkJson \ "targeting" \ "tag").extract[String].split(',')
 
     TedVideoInfo(id, name, ratings, tags)
   }
 
   def parseWebpage(id: Int) = {
-    val html = tedcomDownloadMutex.synchronized(fetchHtml(id))
+    tedcomDownloadSemaphore.acquire()
+    val html = try {
+      fetchHtml(id)
+    } finally {
+      tedcomDownloadSemaphore.release()
+    }
     parseJson(pickJson(pickJsonString(html)))
   }
 }
