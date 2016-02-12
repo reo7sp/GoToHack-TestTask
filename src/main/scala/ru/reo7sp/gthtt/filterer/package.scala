@@ -67,13 +67,8 @@ package object filterer {
       ("id" -> id) ~
       ("name" -> video.name) ~
       ("text" -> filterText(load(srcFile))) ~
-      ("tags" -> video.tags.map { tag =>
-        "name" -> tag.name
-      }) ~
-      ("ratings" -> video.ratings.map { rating =>
-        ("name" -> rating.name) ~
-        ("value" -> rating.value)
-      })
+      ("tags" -> video.tags) ~
+      ("ratings" -> video.ratings.map(_.value))
     // @formatter:on
 
     save(json, new File(srcFile.getParentFile, s"$id.json"))

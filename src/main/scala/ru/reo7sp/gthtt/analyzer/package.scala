@@ -16,7 +16,7 @@ import java.io.{File, PrintWriter}
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.native.JsonMethods
-import ru.reo7sp.gthtt.tedvideo.{Rating, Tag}
+import ru.reo7sp.gthtt.tedvideo.Rating
 
 import scala.collection.parallel.ParIterable
 import scala.io.Source
@@ -31,19 +31,17 @@ package object analyzer {
 
     val json = load(file)
 
-    val ratings = (json \ "ratings").children.map(_.extract[Rating]).sortBy(_.name)
+    val ratings = (json \ "ratings").children.map(_.extract[Int]).zipWithIndex.map(v => Rating(v._2, v._1))
 
-    val words = (json \ "text").extract[String].split(' ').par
-    val wordStats = words.groupBy(identity).mapValues(_.size)
-    val wordRatings = wordStats.mapValues(count => ratings.map(r => r.copy(value = r.value / tagImportance * count)))
+    val words = (json \ "text").extract[String].split(' ')
+    val wordRatings = words.groupBy(identity).mapValues(similar => ratings.map(r => r.copy(value = r.value / tagImportance * similar.size)))
 
-    val tags = (json \ "tags").children.par.map(_.extract[Tag]).map(_.name)
-    val tagStats = tags.groupBy(identity).mapValues(_.size)
-    val tagRatings = tagStats.mapValues(count => ratings.map(r => r.copy(value = r.value * count)))
+    val tags = (json \ "tags").children.map(_.extract[String])
+    val tagRatings = tags.groupBy(identity).mapValues(similar => ratings.map(r => r.copy(value = r.value * similar.size)))
 
-    val stats = wordRatings.map { case (name, ratings) => Theme(name, ratings) } ++ tagRatings.map { case (name, ratings) => Theme(name, ratings) }
+    val themes = wordRatings.map { case (name, ratings) => Theme(name, ratings) } ++ tagRatings.map { case (name, ratings) => Theme(name, ratings) }
 
-    Report(stats.seq)
+    Report(themes)
   }
 
   def pickBestThemes(files: ParIterable[File]): Report = files.map(pickBestThemes).reduce(_ merge _)
@@ -59,7 +57,7 @@ package object analyzer {
     }
 
     // @formatter:off
-    val json = report.themes.toSeq.sortBy(_.ratings.map(_.value).sum).reverse.map { theme =>
+    val json = report.themes.toSeq.sortBy(_.ratings.map(_.value).sum)(Ordering[Int].reverse).map { theme =>
       ("name" -> theme.name) ~
       ("ratings" -> theme.ratings.map(rating => rating.name -> rating.value))
     }

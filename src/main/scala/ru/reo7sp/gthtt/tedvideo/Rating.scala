@@ -11,4 +11,12 @@
 
 package ru.reo7sp.gthtt.tedvideo
 
-case class Rating(name: String, value: Int)
+case class Rating(id: Int, value: Int) {
+  def name = Rating.names(id)
+}
+
+object Rating {
+  val names = IndexedSeq("Funny", "Courageous", "Confusing", "Beautiful", "Unconvincing", "Longwinded", "Informative", "Inspiring", "Fascinating", "Ingenious", "Persuasive", "Jaw-dropping", "Obnoxious", "OK")
+
+  def apply(name: String, value: Int): Rating = Rating(names.indexOf(name), value)
+}

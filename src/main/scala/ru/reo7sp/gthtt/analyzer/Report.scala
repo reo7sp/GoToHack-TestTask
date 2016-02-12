@@ -11,17 +11,18 @@
 
 package ru.reo7sp.gthtt.analyzer
 
+import ru.reo7sp.gthtt.tedvideo.Rating
+
 case class Report(themes: Iterable[Theme]) {
   def merge(other: Report) = {
     val newThemes = (themes ++ other.themes).par.groupBy(_.name).map {
       case (name, similarThemes) =>
-        val ratings = similarThemes.map(_.ratings).reduce { (ratings1, ratings2) =>
-          (ratings1 zip ratings2).map { case (r1, r2) =>
-            r1.copy(value = r1.value + r2.value)
-          }
+        val ratings = similarThemes.head.ratings.map(_.value).toBuffer
+        similarThemes.tail.foreach { theme =>
+          theme.ratings.foreach(r => ratings(r.id) += r.value)
         }
-        Theme(name, ratings)
-    }
+        Theme(name, ratings.zipWithIndex.map(v => Rating(v._2, v._1)))
+    }.seq
     Report(newThemes)
   }
 }
