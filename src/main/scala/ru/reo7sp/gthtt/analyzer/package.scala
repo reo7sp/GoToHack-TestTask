@@ -57,9 +57,10 @@ package object analyzer {
     }
 
     // @formatter:off
-    val json = report.themes.toSeq.sortBy(_.ratings.map(_.value).sum)(Ordering[Int].reverse).map { theme =>
+    val json = report.themes.toSeq.sortBy(_.popularity)(Ordering[Int].reverse).map { theme =>
       ("name" -> theme.name) ~
-      ("ratings" -> theme.ratings.map(rating => rating.name -> rating.value))
+      ("popularity" -> theme.popularity) ~
+      ("ratings" -> JObject(theme.ratings.map(rating => JField(rating.name, rating.value)): _*))
     }
     // @formatter:on
 

@@ -24,6 +24,7 @@ object Launcher extends App {
         println(s"Downloading ${indexTo - indexFrom + 1} subtitles to $destDir")
 
         downloader.downloadSubs(destDir, indexFrom, indexTo)
+
       case "filter" =>
         val availableFiles = new File(args(1)).listFiles.toSet.par
         val isRewrite = args.lift(2).contains("-r")
@@ -38,6 +39,7 @@ object Launcher extends App {
         println(s"Filtering ${files.size} subtitles")
 
         filterer.filterSubs(files)
+
       case "analyze" =>
         val destFile = new File(args(2))
         val files = new File(args(1)).listFiles.par.filter(_.getName.endsWith(".json"))
@@ -45,6 +47,16 @@ object Launcher extends App {
         println(s"Analyzing ${files.size} videos and saving to $destFile")
 
         analyzer.saveReport(analyzer.pickBestThemes(files), destFile)
+
+      case "csvExport" =>
+        val reportFile = new File(args(1))
+        val destFile = new File(args(2))
+        val indexFrom = args.lift(3).getOrElse("1").toInt
+        val indexTo = args.lift(4).getOrElse("99999999").toInt
+
+        println(s"Converting json file $reportFile to csv file $destFile")
+
+        csvExporter.export(reportFile, destFile, indexFrom, indexTo)
     }
   } catch {
     case e: ArrayIndexOutOfBoundsException =>
@@ -64,6 +76,7 @@ object Launcher extends App {
         |    Options:
         |      -r rewrite existing files
         |  analyze SUBS_DIR DESTINATION_FILE
+        |  csvExport REPORT_FILE DESTINATION_FILE INDEX_FROM=1 INDEX_TO=99999999
       """.stripMargin)
   }
 }

@@ -13,4 +13,6 @@ package ru.reo7sp.gthtt.analyzer
 
 import ru.reo7sp.gthtt.tedvideo.Rating
 
-case class Theme(name: String, ratings: Seq[Rating])
+case class Theme(name: String, ratings: Seq[Rating]) {
+  lazy val popularity = ratings.map(_.value).sum
+}
