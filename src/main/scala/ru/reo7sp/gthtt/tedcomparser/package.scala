@@ -21,7 +21,7 @@ import scala.io.Source
 
 package object tedcomParser {
   val jsonInTedComHtmlPattern = """<script>q\("talkPage.init",(.+?)\)</script></div>""".r
-  val tedcomDownloadSemaphore = new Semaphore(3)
+  val tedcomDownloadSemaphore = new Semaphore(2)
 
   def fetchHtml(id: Int) = Source.fromURL(s"http://ted.com/talks/$id", "UTF-8").getLines().mkString
 
