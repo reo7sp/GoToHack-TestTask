@@ -11,7 +11,7 @@
 
 package ru.reo7sp.gthtt
 
-import java.io.{File, FileNotFoundException, PrintWriter}
+import java.io._
 
 import org.json4s.JsonDSL._
 import org.json4s._
@@ -53,7 +53,7 @@ package object filterer {
     def save(json: JValue, file: File): Unit = {
       val writer = new PrintWriter(file)
       try {
-        writer.write(JsonMethods.pretty(JsonMethods.render(json)))
+        writer.write(JsonMethods.pretty(JsonMethods.render(json)).replaceAll("""\\u\d{4}""", ""))
       } finally {
         writer.close()
       }
