@@ -59,7 +59,7 @@ package object analyzer {
     }
 
     // @formatter:off
-    val json = report.themes.map { theme =>
+    val json = report.themes.toSeq.sortBy(_.ratings.map(_.value).sum).reverse.map { theme =>
       ("name" -> theme.name) ~
       ("ratings" -> theme.ratings.map(rating => rating.name -> rating.value))
     }
