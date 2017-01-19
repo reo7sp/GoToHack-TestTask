@@ -1,4 +1,4 @@
-# GoToHack-TestTask
+# GoToHack test task
 Отборочное задание на хакатон GoToHack BigData
 
 ## Что вдохновляет людей во всем мире
