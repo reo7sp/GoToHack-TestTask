@@ -1,5 +1,5 @@
 # GoToHack test task
-Отборочное задание на хакатон GoToHack BigData
+Отборочное задание на хакатон [GoToHack Big Data](http://goto.msk.ru/hackathon/1/).
 
 ## Что вдохновляет людей во всем мире
 
